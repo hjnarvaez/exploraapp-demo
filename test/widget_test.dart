@@ -8,7 +8,13 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const ExploraEcApp());
-    await tester.pump();
+
+    // Avanza el tiempo suficiente para que termine
+    // fetchLugaresSimulado(), que espera 1 segundo.
+    await tester.pump(const Duration(seconds: 1));
+
+    // Procesa los rebuilds provocados por GetX/Obx.
+    await tester.pumpAndSettle();
 
     // La aplicación raíz debe contener un MaterialApp.
     expect(find.byType(MaterialApp), findsOneWidget);
