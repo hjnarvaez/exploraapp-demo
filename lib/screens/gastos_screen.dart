@@ -137,6 +137,7 @@ class GastosScreen extends GetView<GastosController> {
     );
   }
 
+  // Los chips permiten filtrar los gastos por categoría.
   Widget _buildFiltros() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
