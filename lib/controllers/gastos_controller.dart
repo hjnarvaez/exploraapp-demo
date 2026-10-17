@@ -19,6 +19,7 @@ class GastosController extends GetxController {
   late final GastosRepository _repository = GastosRepository(_api);
 
   final RxList<Gasto> gastos = <Gasto>[].obs;
+  final RxnString categoriaSeleccionada = RxnString();
   final Rx<EstadoCarga> estado = EstadoCarga.exito.obs;
   final RxString mensajeError = ''.obs;
   final RxInt totalEnServidor = 0.obs;
@@ -30,6 +31,27 @@ class GastosController extends GetxController {
   /// servidor no respondió): la UI lo usa para avisar «datos guardados».
   final RxBool desdeCache = false.obs;
   String get ultimaSincronizacion => _repository.ultimaSincronizacion;
+
+  /// Categorías que realmente aparecen en los gastos cargados. El conjunto
+  /// conserva el orden de la lista y evita mostrar filtros sin resultados.
+  List<String> get categoriasPresentes =>
+      gastos.map((gasto) => gasto.categoria).toSet().toList();
+
+  /// Vista derivada para la pantalla: [gastos] siempre conserva la colección
+  /// completa que llegó del repositorio.
+  List<Gasto> get gastosFiltrados {
+    final categoria = categoriaSeleccionada.value;
+    if (categoria == null) return gastos.toList(growable: false);
+    return gastos
+        .where((gasto) => gasto.categoria == categoria)
+        .toList(growable: false);
+  }
+
+  void seleccionarCategoria(String? categoria) {
+    if (categoria == null || categoriasPresentes.contains(categoria)) {
+      categoriaSeleccionada.value = categoria;
+    }
+  }
 
   @override
   void onInit() {
@@ -72,6 +94,9 @@ class GastosController extends GetxController {
   Future<void> _refrescar() async {
     final (lista, cache) = await _repository.obtenerGastos();
     gastos.value = lista;
+    if (!categoriasPresentes.contains(categoriaSeleccionada.value)) {
+      categoriaSeleccionada.value = null;
+    }
     totalEnServidor.value = lista.length;
     desdeCache.value = cache;
   }
@@ -88,7 +113,8 @@ class GastosController extends GetxController {
   Future<void> crear(String descripcion, double monto, String categoria) async {
     // Por qué: se manda el gasto al servidor y la pantalla se actualiza con lo
     // que el servidor guardó realmente (no se supone que salió bien).
-    await _api.crear({'descripcion': descripcion, 'monto': monto, 'categoria': categoria});
+    await _api.crear(
+        {'descripcion': descripcion, 'monto': monto, 'categoria': categoria});
     await _refrescar();
   }
 
@@ -125,6 +151,7 @@ class GastosController extends GetxController {
   Future<void> limpiar() async {
     await _repository.vaciar();
     gastos.clear();
+    categoriaSeleccionada.value = null;
     categorias.clear();
     totalEnServidor.value = 0;
     desdeCache.value = false;
