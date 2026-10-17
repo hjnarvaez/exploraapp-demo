@@ -40,5 +40,9 @@ Los dos deben terminar sin errores. Si fallan, corrige el código; no desactives
 
 <!-- Paso 6 de la práctica: escribe aquí dos reglas propias para ESTE proyecto. -->
 
-- (regla 1)
-- (regla 2)
+- Mantener los nombres de clases, funciones y variables en español,
+  siguiendo las convenciones existentes del proyecto.
+
+- Antes de crear nuevos widgets, controladores o servicios,
+  revisar los componentes existentes para evitar duplicaciones
+  y mantener la arquitectura actual.
